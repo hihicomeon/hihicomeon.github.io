@@ -1,0 +1,50 @@
+user nginx;
+worker_processes 1;
+error_log /dev/stderr warn;
+pid /var/run/nginx.pid;
+
+events {
+  worker_connections 4096;
+}
+
+http {
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+  #log_format main '$remote_addr - $remote_user [$time_local] $status '
+  #'"$request" $body_bytes_sent "$http_referer" '
+  #'"$http_user_agent" "$http_x_forwarded_for"';
+  access_log off;
+
+  index index.html;
+
+  sendfile on;
+  keepalive_timeout 65;
+
+  tcp_nopush on;
+
+  server {
+    listen 80;
+    server_name localhost 127.0.0.1;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    gzip on;
+    gzip_types application/javascript text/* image/*;
+
+    location ~* \.(jpg|jpeg|png|gif|ico)$ {
+      expires 30d;
+    }
+
+    location ~* \.(css|js)$ {
+      expires 7d;
+    }
+
+    location / {
+        try_files $uri /index.html;
+        add_header Access-Control-Allow-Origin *;
+    }
+
+    error_page 404 /404;
+  }
+}
